@@ -6,399 +6,956 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
-    <title>BISHA OS v19</title>
+    <title>BISHA OS v16 // ALPHA-PRO</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
 
     <style>
         /* ==========================================================================
-           1. CORE ENGINE
-           ========================================================================== */
+           1. CYBERPUNK ARCHITECTURE - DESIGN SYSTEM
+           ========================================================================== 
+        */
         :root {
-            --bg: #000000;
-            --card: #0c0c0c;
-            --border: #1f1f1f;
-            --primary: #00ff9d;
-            --primary-dim: rgba(0, 255, 157, 0.1);
+            --bg-deep: #000000;
+            --bg-panel: #050505;
+            --bg-card: #0c0c0c;
+            --bg-row: #111111;
             
-            --font-main: 'Inter', sans-serif;
+            /* NEON CORE PALETTE */
+            --primary-neon: #00ff9d;
+            --primary-glow: rgba(0, 255, 157, 0.4);
+            --secondary-neon: #00e5ff;
+            --secondary-glow: rgba(0, 229, 255, 0.4);
+            --error-neon: #ff0044;
+            --error-glow: rgba(255, 0, 68, 0.4);
+            
+            --border-std: 1px solid #1a1a1a;
+            --border-active: 1px solid var(--primary-neon);
+            
+            --radius-massive: 38px;
+            --radius-medium: 22px;
+            --radius-small: 12px;
+
             --font-code: 'JetBrains Mono', monospace;
+            --font-main: 'Inter', sans-serif;
+
+            /* ORIGINAL GRADIENTS FROM SOURCE */
+            --g-mor: linear-gradient(135deg, #FF9900, #FF5500);
+            --g-sch: linear-gradient(135deg, #00C6FF, #0072FF);
+            --g-lun: linear-gradient(135deg, #A8FF78, #78FFD6);
+            --g-gym: linear-gradient(135deg, #00ff9d, #00b86e);
+            --g-stu: linear-gradient(135deg, #E100FF, #7F00FF);
+            --g-sle: linear-gradient(135deg, #333333, #000000);
+
+            --spring: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+            --expo: cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
-        
-        body { 
-            margin: 0; padding: 0; 
-            background: var(--bg); color: #fff; 
-            font-family: var(--font-main); 
-            height: 100vh; overflow: hidden;
-            touch-action: pan-y;
+        /* ==========================================================================
+           2. GLOBAL MOBILE OPTIMIZATION
+           ========================================================================== 
+        */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0;
+            -webkit-tap-highlight-color: transparent; 
+            outline: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-deep);
+            color: #ffffff;
+            font-family: var(--font-main);
+            overflow: hidden; /* Body is locked, #mainApp handles scrolling */
+            position: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ==========================================================================
-           2. LOCK SCREEN (STABLE VERSION)
-           ========================================================================== */
-        #lock {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 99999; /* Max Z-Index */
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
-        }
-        
-        .scanner-box {
-            width: 80px; height: 80px; border: 2px solid #333; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center; position: relative;
-            margin-bottom: 20px; overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 255, 157, 0.1);
-        }
-        .scan-bar {
-            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: var(--primary); box-shadow: 0 0 10px var(--primary);
-            animation: scan 2s infinite ease-in-out;
-        }
-        @keyframes scan { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
-
-        .lock-msg {
-            font-family: var(--font-code); font-size: 14px; color: var(--primary);
-            margin-bottom: 40px; letter-spacing: 1px;
+           3. ADVANCED KEYFRAME ENGINE
+           ========================================================================== 
+        */
+        @keyframes glitch-loop {
+            0% { transform: translate(0); text-shadow: 2px 2px var(--error-neon); }
+            1% { transform: translate(-2px, 1px); }
+            2% { transform: translate(2px, -1px); text-shadow: -2px -2px var(--secondary-neon); }
+            3% { transform: translate(0); text-shadow: none; }
+            100% { transform: translate(0); }
         }
 
-        .pin-row { display: flex; gap: 20px; margin-bottom: 50px; }
-        .p-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #444; transition: 0.2s; background: #111; }
-        .p-dot.filled { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary); transform: scale(1.2); }
-        .p-dot.err { background: #ff3b30; border-color: #ff3b30; }
-
-        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-        .k-btn { 
-            width: 75px; height: 75px; border-radius: 50%; background: rgba(255,255,255,0.08); 
-            display: flex; justify-content: center; align-items: center; 
-            font-size: 28px; font-family: var(--font-code); color: #fff;
-            border: 1px solid rgba(255,255,255,0.05); transition: 0.1s;
-            cursor: pointer; touch-action: manipulation;
+        @keyframes sweep-light {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
         }
-        .k-btn:active { background: var(--primary); color: #000; transform: scale(0.9); }
+
+        @keyframes jitter-denial {
+            0% { transform: translateX(0) scale(1); }
+            20% { transform: translateX(-10px) rotate(-1deg); border-color: var(--error-neon); box-shadow: 0 0 20px var(--error-glow); }
+            40% { transform: translateX(10px) rotate(1deg); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+            100% { transform: translateX(0) scale(1); }
+        }
+
+        @keyframes card-materialize {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+        }
+
+        @keyframes check-burst {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(255,255,255,0); }
+            50% { transform: scale(1.3); box-shadow: 0 0 30px var(--primary-neon); }
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--primary-neon); }
+        }
 
         /* ==========================================================================
-           3. APP INTERFACE
-           ========================================================================== */
-        #app {
-            height: 100%; overflow-y: auto; display: none; opacity: 0;
-            padding-bottom: 140px; transition: opacity 0.6s;
+           4. LOCK TERMINAL SUBSYSTEM
+           ========================================================================== 
+        */
+        #terminalLock {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s var(--expo), transform 0.6s var(--expo);
         }
 
-        .header {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--primary-dim);
-            padding: 20px; display: flex; justify-content: space-between; align-items: center;
-            backdrop-filter: blur(10px);
+        .terminal-brand {
+            font-family: var(--font-code);
+            font-size: 50px;
+            font-weight: 800;
+            color: var(--primary-neon);
+            margin-bottom: 25px;
+            animation: glitch-loop 4s infinite linear;
         }
-        .brand { font-family: var(--font-main); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
-        .brand span { color: var(--primary); }
 
-        /* FEATURES SECTION */
-        .features { padding: 0 20px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .terminal-readout {
+            font-family: var(--font-code);
+            font-size: 11px;
+            color: #333;
+            text-align: center;
+            width: 80%;
+            height: 60px;
+            margin-bottom: 40px;
+            overflow: hidden;
+            border-left: 2px solid #111;
+            padding-left: 10px;
+        }
+
+        .matrix-dots {
+            display: flex;
+            gap: 22px;
+            margin-bottom: 60px;
+        }
+
+        .dot-node {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #222;
+            transition: 0.3s var(--spring);
+        }
+
+        .dot-node.active {
+            background: var(--primary-neon);
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 20px var(--primary-neon);
+            transform: scale(1.4);
+        }
+
+        .dot-node.breach {
+            background: var(--error-neon);
+            border-color: var(--error-neon);
+            box-shadow: 0 0 15px var(--error-neon);
+        }
+
+        .numpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .num-btn {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #fff;
+            font-family: var(--font-code);
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.1s;
+        }
+
+        .num-btn:active {
+            background: var(--primary-neon);
+            color: #000;
+            transform: scale(0.9);
+            box-shadow: 0 0 30px var(--primary-glow);
+        }
+
+        /* ==========================================================================
+           5. MAIN OS SHELL
+           ========================================================================== 
+        */
+        #mainAppShell {
+            display: none; /* Injected after unlock */
+            height: 100vh;
+            width: 100vw;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: var(--bg-deep);
+            padding-bottom: 140px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(30px);
+            padding: 22px 25px;
+            padding-top: max(22px, env(safe-area-inset-top));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #181818;
+        }
+
+        .app-logo {
+            font-family: var(--font-code);
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -1px;
+            animation: glitch-loop 5s infinite;
+        }
+
+        .app-logo span { color: var(--primary-neon); }
+
+        .app-timer {
+            font-family: var(--font-code);
+            font-size: 11px;
+            background: #0a0a0a;
+            color: #555;
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 1px solid #222;
+        }
+
+        .app-feed {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* ==========================================================================
+           6. COMPONENT: SYSTEM DATA CARD
+           ========================================================================== 
+        */
+        .data-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-massive);
+            border: var(--border-std);
+            overflow: hidden;
+            transition: all 0.4s var(--expo);
+            animation: card-materialize 0.6s var(--expo) both;
+            position: relative;
+        }
+
+        .data-card.active-today {
+            border: 1px solid var(--primary-neon);
+            box-shadow: 0 0 40px rgba(0, 255, 157, 0.1);
+        }
+
+        .data-card.done-state {
+            opacity: 0.45;
+            filter: grayscale(1);
+        }
+
+        .data-card.done-state .card-title,
+        .data-card.done-state .row-name {
+            text-decoration: line-through;
+            text-decoration-color: var(--primary-neon);
+        }
+
+        /* Denial Animation Class */
+        .denied-pulse { animation: jitter-denial 0.4s var(--expo); }
+
+        .card-head {
+            padding: 24px 30px;
+            background: linear-gradient(180deg, #121212, #070707);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .card-title { font-size: 26px; font-weight: 900; letter-spacing: -1px; }
+        .card-subtitle { 
+            font-size: 11px; 
+            font-family: var(--font-code); 
+            color: var(--primary-neon); 
+            text-transform: uppercase; 
+            margin-top: 4px;
+            letter-spacing: 2px;
+        }
+
+        .node-switch {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2.5px solid #2a2a2a;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.4s var(--spring);
+        }
+
+        .node-switch.active {
+            background: var(--primary-neon);
+            border-color: var(--primary-neon);
+            color: #000;
+            box-shadow: 0 0 20px var(--primary-neon);
+            animation: check-burst 0.5s var(--spring);
+        }
+
+        .node-switch i { display: none; font-size: 22px; font-weight: 900; }
+        .node-switch.active i { display: block; }
+
+        .row-item {
+            display: flex;
+            align-items: center;
+            padding: 18px 30px;
+            border-bottom: 1px solid #141414;
+        }
+
+        .row-item:last-child { border-bottom: none; }
+
+        .badge-tag {
+            font-family: var(--font-code);
+            font-size: 9px;
+            font-weight: 900;
+            padding: 6px 0;
+            width: 60px;
+            text-align: center;
+            border-radius: 12px;
+            margin-right: 25px;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.06);
+            text-transform: uppercase;
+        }
+
+        .row-data h4 { font-size: 15px; font-weight: 700; color: #fff; }
+        .row-data p { font-size: 12px; color: #777; margin-top: 3px; font-weight: 500; }
+
+        /* GYM SUB-MODULE */
+        .gym-trigger {
+            width: 100%;
+            padding: 22px;
+            background: #111111;
+            border: none;
+            border-top: 1px solid #222;
+            color: #ffffff;
+            font-family: var(--font-code);
+            font-size: 12px;
+            font-weight: 800;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gym-panel {
+            display: none;
+            background: #000000;
+            padding: 15px 30px 25px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .ex-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #111;
+        }
+
+        .ex-line span { font-size: 14px; font-weight: 600; color: #eee; }
+        .ex-line small { font-size: 12px; color: var(--primary-neon); font-family: var(--font-code); }
+
+        .wiki-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin-top: 25px;
+            background: rgba(0, 255, 157, 0.04);
+            border: 1px solid var(--primary-neon);
+            color: var(--primary-neon);
+            border-radius: 50px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: 0.2s;
+        }
         
-        .f-card {
-            background: rgba(0, 255, 157, 0.05); border: 1px solid var(--primary-dim);
-            padding: 15px; border-radius: 8px; position: relative;
-        }
-        .f-head { font-size: 10px; color: #888; text-transform: uppercase; font-family: var(--font-code); }
-        .f-body { font-size: 18px; font-weight: 800; color: #fff; margin-top: 5px; }
-        
-        .status-txt { font-size: 10px; color: var(--primary); margin-top: 5px; font-weight: 700; animation: blink 2s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        .wiki-btn:active { background: var(--primary-neon); color: #000; }
 
-        .loot-trigger {
-            grid-column: span 2; background: linear-gradient(90deg, #111, #222); border: 1px solid var(--primary);
-            color: var(--primary); font-family: var(--font-code); font-weight: 800; text-transform: uppercase;
-            padding: 15px; text-align: center; cursor: pointer; letter-spacing: 2px;
-        }
-        .loot-trigger:active { background: var(--primary); color: #000; }
-
-        /* FEED & CARDS */
-        .feed { padding: 0 20px; display: flex; flex-direction: column; gap: 25px; }
-
-        .card {
-            background: #0a0a0a; border-left: 2px solid #333; padding: 0;
-            position: relative; transition: 0.3s;
-        }
-        .card.today { border-left: 4px solid var(--primary); background: linear-gradient(90deg, rgba(0,255,157,0.05), transparent); }
-        
-        /* DONE STATE */
-        .card.done { opacity: 0.5; filter: grayscale(1); border-left-color: #333; }
-        .card.done * { text-decoration: line-through; text-decoration-thickness: 2px; }
-        .card.done .check { border-color: #333; background: transparent; }
-        .card.done .check i { display: block; color: #555; }
-
-        .c-header {
-            display: flex; justify-content: space-between; align-items: center; padding: 15px;
-            background: #0f0f0f; border-bottom: 1px solid #1a1a1a;
-        }
-        .date { font-size: 22px; font-weight: 900; }
-        .day { font-size: 12px; color: var(--primary); font-family: var(--font-code); }
-
-        .check {
-            width: 35px; height: 35px; border: 2px solid #333; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; background: #000; transition: 0.2s; touch-action: manipulation;
-        }
-        .check.active { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 15px var(--primary); }
-        .check i { display: none; color: #000; font-weight: 900; }
-        .check.active i { display: block; text-decoration: none !important; }
-
-        .row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #111; }
-        
-        .badge { 
-            font-family: var(--font-code); font-size: 9px; font-weight: 800; color: #000;
-            padding: 4px 0; width: 60px; text-align: center; margin-right: 15px;
-            clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%, 0% 25%);
-        }
-        
-        /* COLORS */
-        .b-1 { background: #ff9f0a; box-shadow: 0 0 10px #ff9f0a; } 
-        .b-2 { background: #0a84ff; box-shadow: 0 0 10px #0a84ff; color: #fff; } 
-        .b-3 { background: #ff375f; box-shadow: 0 0 10px #ff375f; color: #fff; } 
-        .b-4 { background: #00ff9d; box-shadow: 0 0 15px #00ff9d; } 
-        .b-5 { background: #bf5af2; box-shadow: 0 0 10px #bf5af2; color: #fff; } 
-        .b-6 { background: #333; color: #888; border: 1px solid #555; } 
-
-        .gym-area { padding: 15px; background: rgba(0,0,0,0.3); }
-        .gym-btn { 
-            width: 100%; background: #111; border: 1px solid #333; color: var(--primary);
-            padding: 12px; font-family: var(--font-code); font-size: 11px; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 1px;
+        /* ==========================================================================
+           7. ALPHA HUD (ADVANCED PROGRESS DOCK)
+           ========================================================================== 
+        */
+        .alpha-hud {
+            position: fixed;
+            bottom: 35px;
+            left: 20px;
+            right: 20px;
+            background: rgba(8, 8, 8, 0.95);
+            backdrop-filter: blur(40px);
+            padding: 22px 28px;
+            border-radius: 50px;
+            border: 1px solid #222;
+            z-index: 2000;
+            box-shadow: 0 20px 70px rgba(0,0,0,0.95);
         }
 
-        /* DOCK */
-        .dock {
-            position: fixed; bottom: 0; left: 0; width: 100%; 
-            background: rgba(0,0,0,0.95); border-top: 1px solid var(--primary-dim);
-            padding: 15px 20px; padding-bottom: max(15px, env(safe-area-inset-bottom));
-            z-index: 500; display: flex; justify-content: space-between; align-items: center;
+        .track-bg {
+            height: 12px;
+            background: #181818;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            position: relative;
         }
-        .bpm-wrap { font-family: var(--font-code); font-size: 12px; color: var(--primary); display: flex; align-items: center; gap: 5px; }
-        .heart { width: 8px; height: 8px; background: var(--primary); transform: rotate(45deg); animation: beat 1s infinite; }
-        @keyframes beat { 0% { transform: scale(1) rotate(45deg); } 50% { transform: scale(1.3) rotate(45deg); } 100% { transform: scale(1) rotate(45deg); } }
+
+        .fill-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-neon), var(--secondary-neon), var(--primary-neon));
+            background-size: 200% 100%;
+            width: 0%;
+            transition: width 1.8s var(--expo);
+            position: relative;
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
+
+        /* Quantum Scanning Light */
+        .fill-bar::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%; width: 120px; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+            animation: sweep-light 3s infinite linear;
+        }
+
+        .hud-status {
+            font-family: var(--font-code);
+            font-size: 11px;
+            color: #555;
+            text-align: center;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .hud-status b { color: var(--primary-neon); text-shadow: 0 0 5px var(--primary-glow); }
 
     </style>
 </head>
 <body>
 
-    <div id="lock">
-        <div class="scanner-box">
-            <div class="scan-bar"></div>
-            <div style="font-size:30px">🔒</div>
+    <div id="terminalLock">
+        <div class="terminal-brand">BISHA_OS</div>
+        <div class="terminal-readout" id="bootLogs">
+            [SYS] BOOT_PROTOCOL: V16.0_ALPHA<br>
+            [SEC] ENCRYPTION_LAYER: LOCKED<br>
+            [IO] AWAITING_BIO_PIN_INPUT...
         </div>
-        <div class="lock-msg">SECURITY CLEARANCE REQ.</div>
         
-        <div class="pin-row">
-            <div class="p-dot" id="d1"></div><div class="p-dot" id="d2"></div>
-            <div class="p-dot" id="d3"></div><div class="p-dot" id="d4"></div>
+        <div class="matrix-dots">
+            <div class="dot-node" id="n-1"></div>
+            <div class="dot-node" id="n-2"></div>
+            <div class="dot-node" id="n-3"></div>
+            <div class="dot-node" id="n-4"></div>
         </div>
 
-        <div class="keypad">
-            <div class="k-btn" onclick="tap(1)">1</div><div class="k-btn" onclick="tap(2)">2</div><div class="k-btn" onclick="tap(3)">3</div>
-            <div class="k-btn" onclick="tap(4)">4</div><div class="k-btn" onclick="tap(5)">5</div><div class="k-btn" onclick="tap(6)">6</div>
-            <div class="k-btn" onclick="tap(7)">7</div><div class="k-btn" onclick="tap(8)">8</div><div class="k-btn" onclick="tap(9)">9</div>
-            <div class="k-btn" style="opacity:0"></div><div class="k-btn" onclick="tap(0)">0</div><div class="k-btn" onclick="del()">⌫</div>
+        <div class="numpad-grid">
+            <div class="num-btn" onclick="dial(1)">1</div>
+            <div class="num-btn" onclick="dial(2)">2</div>
+            <div class="num-btn" onclick="dial(3)">3</div>
+            <div class="num-btn" onclick="dial(4)">4</div>
+            <div class="num-btn" onclick="dial(5)">5</div>
+            <div class="num-btn" onclick="dial(6)">6</div>
+            <div class="num-btn" onclick="dial(7)">7</div>
+            <div class="num-btn" onclick="dial(8)">8</div>
+            <div class="num-btn" onclick="dial(9)">9</div>
+            <div style="width:82px"></div>
+            <div class="num-btn" onclick="dial(0)">0</div>
+            <div class="num-btn" onclick="purge()">⌫</div>
         </div>
     </div>
 
-    <div id="app">
-        <div class="header">
-            <div class="brand">BISHA <span>OS</span></div>
-            <div style="font-family:var(--font-code); font-size:10px; color:#666">v19.0</div>
+    <div id="mainAppShell">
+        <div class="app-header">
+            <div class="app-logo">PLAN <span>//</span> BISHA</div>
+            <div class="app-timer" id="clockHud">00:00:00</div>
         </div>
 
-        <div class="features">
-            <div class="f-card">
-                <div class="f-head">FASTING STATUS</div>
-                <div class="f-body" id="fast-timer">16:00</div>
-                <div class="status-txt">FAT BURNING MODE</div>
+        <div class="app-feed" id="protocolFeed">
             </div>
-            
-            <div class="f-card">
-                <div class="f-head">HEART RATE</div>
-                <div class="f-body" style="color:var(--primary)">65 <span style="font-size:12px">BPM</span></div>
-                <div style="height:2px; width:100%; background:#333; margin-top:10px; position:relative; overflow:hidden">
-                    <div style="width:20%; height:100%; background:var(--primary); animation: moveLine 1s infinite linear"></div>
-                </div>
-            </div>
-
-            <div class="loot-trigger" onclick="loot()">🎲 GENERATE LOOT TASK</div>
-        </div>
-
-        <div class="feed" id="feed"></div>
     </div>
 
-    <div class="dock">
-        <div class="bpm-wrap"><div class="heart"></div> SYSTEM ONLINE</div>
-        <div style="font-family:var(--font-code); font-size:12px; color:#666" id="pct">0%</div>
+    <div class="alpha-hud">
+        <div class="track-bg">
+            <div class="fill-bar" id="quantumBar"></div>
+        </div>
+        <div class="hud-status" id="hudMetric">
+            DATA_STREAM: <b>OFFLINE</b>
+        </div>
     </div>
 
 <script>
-    const PASS = "5858";
-    const WIKI = "https://musclewiki.com"; 
+    /* ==========================================================================
+       BISHA ALPHA ENGINE V16.0
+       ========================================================================== 
+    */
+    
+    const AUTH_KEY = "5858";
+    let pinBuffer = "";
 
-    // DATA
-    const DATA = [
-        {d:"11 JAN", w:"E DIEL", s:[{t:"10:00", c:"b-1", n:"Mëngjes", d:"Krepa"},{t:"14:00", c:"b-3", n:"Dreka", d:"Supë"},{t:"20:00", c:"b-6", n:"Darka", d:"Kos"}], g:{on:false}},
-        {d:"12 JAN", w:"E HËNË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"3 Vezë"},{t:"08:00", c:"b-2", n:"Shkollë", d:"Deri 15:00"},{t:"15:30", c:"b-3", n:"Dreka", d:"Fasule"},{t:"17:00", c:"b-4", n:"GYM", d:"Chest"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"CHEST", x:["Bench Press","Incline","Dips"]}},
-        {d:"13 JAN", w:"E MARTË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Tost"},{t:"08:00", c:"b-2", n:"Shkollë", d:"Snack"},{t:"15:30", c:"b-3", n:"Dreka", d:"Patate"},{t:"17:00", c:"b-4", n:"GYM", d:"Back"},{t:"19:30", c:"b-5", n:"Studim", d:"Lexim"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"BACK", x:["Deadlift","Pullups","Rows"]}},
-        {d:"14 JAN", w:"E MËRKURË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Tërshërë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Makarona"},{t:"17:00", c:"b-5", n:"Relax", d:"Ecje"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:false}},
-        {d:"15 JAN", w:"E ENJTE", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Omëletë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Presh"},{t:"17:00", c:"b-4", n:"GYM", d:"Legs"},{t:"19:30", c:"b-5", n:"Studim", d:"Detyra"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"LEGS", x:["Squat","Leg Press","Calves"]}},
-        {d:"16 JAN", w:"E PREMTE", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Gjizë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Pulë"},{t:"17:00", c:"b-4", n:"GYM", d:"Upper"},{t:"19:30", c:"b-5", n:"Studim", d:"Projekt"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"UPPER", x:["Press","Raises","Arms"]}},
-        {d:"17 JAN", w:"E SHTUNË", s:[{t:"09:00", c:"b-1", n:"Mëngjes", d:"Vezë"},{t:"14:00", c:"b-3", n:"Dreka", d:"Shtëpie"},{t:"16:00", c:"b-4", n:"AKTIV", d:"Vrap"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"CARDIO", x:["Run 30min","Abs"]}},
-        {d:"18 JAN", w:"E DIEL", s:[{t:"10:00", c:"b-1", n:"Mëngjes", d:"Krepa"},{t:"14:00", c:"b-3", n:"Dreka", d:"Supë"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:false}},
-        {d:"19 JAN", w:"E HËNË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Scrambled"},{t:"15:30", c:"b-3", n:"Dreka", d:"Fasule"},{t:"17:00", c:"b-4", n:"GYM", d:"Chest"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"PUSH", x:["Incline","Flys"]}},
-        {d:"20 JAN", w:"E MARTË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Tërshërë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Musaka"},{t:"17:00", c:"b-4", n:"GYM", d:"Back"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"PULL", x:["Lat Pull","Curls"]}},
-        {d:"21 JAN", w:"E MËRKURË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Tost"},{t:"15:30", c:"b-3", n:"Dreka", d:"Burani"},{t:"17:00", c:"b-5", n:"Relax", d:"-"}-{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:false}},
-        {d:"22 JAN", w:"E ENJTE", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Vezë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Presh"},{t:"17:00", c:"b-4", n:"GYM", d:"Legs"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"LEGS", x:["Squat","Lunges"]}},
-        {d:"23 JAN", w:"E PREMTE", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Gjizë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Peshk"},{t:"17:00", c:"b-4", n:"GYM", d:"Full"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"FULL BODY", x:["Clean & Press","Squat"]}},
-        {d:"24 JAN", w:"E SHTUNË", s:[{t:"09:00", c:"b-1", n:"Mëngjes", d:"Omëletë"},{t:"14:00", c:"b-3", n:"Dreka", d:"Shtëpie"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:false}},
-        {d:"25 JAN", w:"E DIEL", s:[{t:"10:00", c:"b-1", n:"Mëngjes", d:"Makarona"},{t:"14:00", c:"b-3", n:"Dreka", d:"Supë"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:false}},
-        {d:"26 JAN", w:"E HËNË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Omëletë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Fasule"},{t:"17:00", c:"b-4", n:"GYM", d:"Chest"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"PUSH", x:["Bench","Pushups"]}},
-        {d:"27 JAN", w:"E MARTË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Tost"},{t:"15:30", c:"b-3", n:"Dreka", d:"Speca"},{t:"17:00", c:"b-4", n:"GYM", d:"Back"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"PULL", x:["Rows","Curls"]}},
-        {d:"28 JAN", w:"E MËRKURË", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Tërshërë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Bamje"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:false}},
-        {d:"29 JAN", w:"E ENJTE", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Vezë"},{t:"15:30", c:"b-3", n:"Dreka", d:"Qofte"},{t:"17:00", c:"b-4", n:"GYM", d:"Legs"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"LEGS", x:["Leg Press","Squat"]}},
-        {d:"30 JAN", w:"E PREMTE", s:[{t:"06:00", c:"b-1", n:"Mëngjes", d:"Sanduiç"},{t:"15:30", c:"b-3", n:"Dreka", d:"Pulë"},{t:"17:00", c:"b-4", n:"GYM", d:"Upper"},{t:"19:30", c:"b-5", n:"Studim", d:"Inxhinieri"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"UPPER", x:["Press","Flys"]}},
-        {d:"31 JAN", w:"E SHTUNË", s:[{t:"10:00", c:"b-1", n:"Mëngjes", d:"Lirë"},{t:"14:00", c:"b-3", n:"Dreka", d:"FESTO"},{t:"18:00", c:"b-4", n:"CHECK", d:"Peshimi"},{t:"22:30", c:"b-6", n:"Gjumë", d:"8h"}], g:{on:true, t:"CHECK", x:["Peshimi","Foto"]}}
+    const TECH_WIKI = {
+        CHEST: "https://musclewiki.com/exercises/male/chest",
+        BACK: "https://musclewiki.com/exercises/male/lats",
+        LEGS: "https://musclewiki.com/exercises/male/quads",
+        SHOULDERS: "https://musclewiki.com/exercises/male/shoulders",
+        ARMS: "https://musclewiki.com/exercises/male/biceps",
+        CARDIO: "https://musclewiki.com/cardio",
+        ABS: "https://musclewiki.com/exercises/male/abdominals"
+    };
+
+    // JANUARY 2026 PROTOCOL LOAD
+    const DATA_SET = [
+        {d:"11 JAN", w:"E DIEL", s:[
+            {t:"10:00", c:"b-mor", n:"Mëngjesi", d:"Krepa/Petulla"},
+            {t:"14:00", c:"b-lun", n:"Dreka", d:"Supë Pule + Sallatë"},
+            {t:"16:00", c:"b-stu", n:"PUSHIM", d:"E Diela Relax"},
+            {t:"20:30", c:"b-sle", n:"Darka", d:"Kos + Fruta"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"Recovery"}
+        ], g:{on:false}},
+
+        {d:"12 JAN", w:"E HËNË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"3 Vezë + Bukë Integrale"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Deri ora 15:00"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Fasule (300g) + Oriz"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Chest & Triceps"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri (Detyra)"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Kos + Arra"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"PUSH (GJOKS)", l:TECH_WIKI.CHEST, x:[{n:"Bench Press",s:"5x5"},{n:"Incline DB",s:"3x10"},{n:"Dips",s:"3xMax"}]}},
+
+        {d:"13 JAN", w:"E MARTË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Tost (2 feta) + Kafe"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Mollë"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Patate Furre + Mish"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Back & Biceps"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri (Lexim)"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Çaj + Mjaltë"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"PULL (SHPINË)", l:TECH_WIKI.BACK, x:[{n:"Deadlift",s:"3x5"},{n:"Rows",s:"4x10"},{n:"Curls",s:"3x12"}]}},
+
+        {d:"14 JAN", w:"E MËRKURË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Tërshërë + Qumësht"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Arra"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Makarona (150g)"},
+            {t:"17:00", c:"b-stu", n:"PUSHIM AKTIV", d:"Ecje ose Relax"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Përgatitje Projekti"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Frut"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:false}},
+
+        {d:"15 JAN", w:"E ENJTE", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Omëletë me Speca"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Corny"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Presh (300g) + Bukë"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Leg Day (Këmbë)"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Vezë e zier (2)"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"LEGS (KËMBË)", l:TECH_WIKI.LEGS, x:[{n:"Squats",s:"4x8"},{n:"Leg Press",s:"3x12"},{n:"Calves",s:"4x20"}]}},
+
+        {d:"16 JAN", w:"E PREMTE", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Gjizë + Vaj Ulliri"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Fruta"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Pulë (200g) + Pilaf"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Shoulders & Arms"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Mbyllje Jave"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Kos (200g)"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"UPPER BODY", l:TECH_WIKI.SHOULDERS, x:[{n:"Overhead Press",s:"4x10"},{n:"Lateral Raises",s:"4x15"},{n:"Skullcrushers",s:"3x12"}]}},
+
+        {d:"17 JAN", w:"E SHTUNË", s:[
+            {t:"09:00", c:"b-mor", n:"Mëngjesi", d:"Vezë sy (2) + Tost"},
+            {t:"14:00", c:"b-lun", n:"Dreka", d:"Ushqim Shtëpie (Lirë)"},
+            {t:"16:00", c:"b-gym", n:"AKTIVITET", d:"Cardio / Vrap në Natyrë"},
+            {t:"18:00", c:"b-stu", n:"STUDIM", d:"Rishikim Javor"},
+            {t:"20:30", c:"b-sle", n:"Darka", d:"Tost"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"CARDIO", l:TECH_WIKI.CARDIO, x:[{n:"Vrapim",s:"30 min"},{n:"Abs",s:"15 min"}]}},
+
+        {d:"18 JAN", w:"E DIEL", s:[
+            {t:"10:00", c:"b-mor", n:"Mëngjesi", d:"Krepa"},
+            {t:"14:00", c:"b-lun", n:"Dreka", d:"Supë"},
+            {t:"16:00", c:"b-stu", n:"PUSHIM", d:"Full Relax"},
+            {t:"20:30", c:"b-sle", n:"Darka", d:"Kos"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:false}},
+
+        {d:"19 JAN", w:"E HËNË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Scrambled Eggs (3)"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Biskota"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Fasule (300g)"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Chest Focus"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Çaj"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"PUSH (GJOKS)", l:TECH_WIKI.CHEST, x:[{n:"Incline Press",s:"4x10"},{n:"Flys",s:"3x15"}]}},
+
+        {d:"20 JAN", w:"E MARTË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Tërshërë"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Dhallë"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Musaka (300g)"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Back Focus"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Kos"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"PULL (SHPINË)", l:TECH_WIKI.BACK, x:[{n:"Pullups",s:"3xMax"},{n:"Lat Pull",s:"3x12"}]}},
+
+        {d:"21 JAN", w:"E MËRKURË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Tost Integral"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Mandarina"},
+            {t:"15:30", c:"b-lun", n:"Dreka", d:"Burani (Spinaq)"},
+            {t:"17:00", c:"b-stu", n:"PUSHIM AKTIV", d:"Ecje"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Detyra"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Qumësht"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:false}},
+
+        {d:"22 JAN", w:"E ENJTE", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"2 Vezë + Kafe"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Simite"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Presh"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Legs Focus"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Frut"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"LEGS", l:TECH_WIKI.LEGS, x:[{n:"Squats",s:"4x10"},{n:"Calf Raises",s:"4x20"}]}},
+
+        {d:"23 JAN", w:"E PREMTE", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Gjizë + Bukë"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Galleta"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Peshk / Mëlçi"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Full Body Mix"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Kos"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"FULL BODY", l:TECH_WIKI.SHOULDERS, x:[{n:"Clean & Press",s:"3x10"},{n:"Squat",s:"3x10"}]}},
+
+        {d:"24 JAN", w:"E SHTUNË", s:[
+            {t:"09:00", c:"b-mor", n:"Mëngjesi", d:"Omëletë"},
+            {t:"14:00", c:"b-lun", n:"Dreka", d:"Shtëpie"},
+            {t:"16:00", c:"b-stu", n:"PUSHIM", d:"-"},
+            {t:"20:30", c:"b-sle", n:"Darka", d:"Fruta"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:false}},
+
+        {d:"25 JAN", w:"E DIEL", s:[
+            {t:"10:00", c:"b-mor", n:"Mëngjesi", d:"Makarona"},
+            {t:"14:00", c:"b-lun", n:"Dreka", d:"Supë"},
+            {t:"18:00", c:"b-stu", n:"PUSHIM", d:"-"},
+            {t:"20:30", c:"b-sle", n:"Darka", d:"Çaj"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:false}},
+
+        {d:"26 JAN", w:"E HËNË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Omëletë (3 Vezë)"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Banane"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Fasule (300g)"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Chest Focus"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Çaj"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"PUSH", l:TECH_WIKI.CHEST, x:[{n:"Bench Press",s:"4x8"},{n:"Pushups",s:"3xMax"}]}},
+
+        {d:"27 JAN", w:"E MARTË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Tost"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Çoko"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Speca mbushur"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Back Focus"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Kos"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"PULL", l:TECH_WIKI.BACK, x:[{n:"Rows",s:"4x10"},{n:"Curls",s:"3x12"}]}},
+
+        {d:"28 JAN", w:"E MËRKURË", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Tërshërë"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Arra"},
+            {t:"15:30", c:"b-lun", n:"Dreka", d:"Bamje"},
+            {t:"17:00", c:"b-stu", n:"PUSHIM AKTIV", d:"Relax"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Detyra"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Qumësht"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:false}},
+
+        {d:"29 JAN", w:"E ENJTE", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"2 Vezë"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Dhallë"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Qofte"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Legs Focus"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Vezë"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"LEGS", l:TECH_WIKI.LEGS, x:[{n:"Leg Press",s:"4x12"},{n:"Squat",s:"3x10"}]}},
+
+        {d:"30 JAN", w:"E PREMTE", s:[
+            {t:"06:00", c:"b-mor", n:"Mëngjesi", d:"Sanduiç Pule"},
+            {t:"08:00", c:"b-sch", n:"Shkollë", d:"Snack: Mollë"},
+            {t:"15:30", c:"b-lun", n:"Dreka (Pre-Gym)", d:"Pulë"},
+            {t:"17:00", c:"b-gym", n:"GYM TIME", d:"Upper Body"},
+            {t:"19:00", c:"b-sle", n:"Dush/Shtëpi", d:"Recovery"},
+            {t:"19:30", c:"b-stu", n:"STUDIM", d:"Inxhinieri"},
+            {t:"21:00", c:"b-sle", n:"Darka", d:"Kos"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"UPPER", l:TECH_WIKI.CHEST, x:[{n:"Military Press",s:"4x10"}]}},
+
+        {d:"31 JAN", w:"E SHTUNË", s:[
+            {t:"10:00", c:"b-mor", n:"Mëngjesi", d:"Lirë"},
+            {t:"14:00", c:"b-lun", n:"Dreka", d:"FESTO (Cheat)"},
+            {t:"18:00", c:"b-gym", n:"PESHIMI", d:"Kontroll Mujor"},
+            {t:"20:30", c:"b-sle", n:"Darka", d:"Detoks"},
+            {t:"22:30", c:"b-sle", n:"Gjumë", d:"8 Orë"}
+        ], g:{on:true, t:"CHECK", l:TECH_WIKI.ABS, x:[{n:"Peshimi",s:"-"},{n:"Foto",s:"-"}]}}
     ];
 
-    let pin = "";
-    
-    function tap(n) {
-        if(pin.length < 4) {
-            pin += n;
-            drawDots();
-            if(navigator.vibrate) navigator.vibrate(10);
-            if(pin.length === 4) auth();
-        }
-    }
-    
-    function del() { pin = pin.slice(0,-1); drawDots(); }
-    
-    function drawDots() {
-        for(let i=1; i<=4; i++) {
-            let d = document.getElementById("d"+i);
-            if(i <= pin.length) d.classList.add("filled");
-            else d.classList.remove("filled");
+    /**
+     * LOCK SCREEN HANDLERS
+     */
+    function dial(n) {
+        if (pinBuffer.length < 4) {
+            pinBuffer += n;
+            const logBox = document.getElementById("bootLogs");
+            logBox.innerHTML += `<br>DATA_PKT_RECV: BIT_${n}`;
+            logBox.scrollTop = logBox.scrollHeight;
+            updateMatrix();
+            if (navigator.vibrate) navigator.vibrate(10);
+            if (pinBuffer.length === 4) runHandshake();
         }
     }
 
-    function auth() {
-        if(pin === PASS) {
-            document.getElementById("lock").style.transform = "translateY(-100%)";
-            setTimeout(() => {
-                document.getElementById("app").style.display = "block";
-                setTimeout(() => {
-                    document.getElementById("app").style.opacity = 1;
-                    render();
-                    startClock();
-                }, 50);
-            }, 400);
-        } else {
-            pin = ""; drawDots();
-            document.querySelectorAll(".p-dot").forEach(d => d.classList.add("err"));
-            if(navigator.vibrate) navigator.vibrate(200);
-            setTimeout(() => document.querySelectorAll(".p-dot").forEach(d => d.classList.remove("err")), 300);
+    function purge() {
+        pinBuffer = pinBuffer.slice(0, -1);
+        updateMatrix();
+    }
+
+    function updateMatrix() {
+        for (let i = 1; i <= 4; i++) {
+            const dot = document.getElementById(`n-${i}`);
+            if (i <= pinBuffer.length) dot.classList.add("active");
+            else dot.classList.remove("active");
         }
     }
 
-    function render() {
-        const feed = document.getElementById("feed");
-        const todayStr = new Date().getDate() + " JAN"; 
-        let c = 0;
-        let h = "";
+    function runHandshake() {
+        const lock = document.getElementById("terminalLock");
+        const logBox = document.getElementById("bootLogs");
 
-        DATA.forEach((d, i) => {
-            const id = "v19_" + i;
-            const done = localStorage.getItem(id) === "1";
-            if(done) c++;
+        if (pinBuffer === AUTH_KEY) {
+            logBox.innerHTML += "<br>HANDSHAKE: SUCCESS... LOADING_ENV";
+            if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
             
-            const isToday = (d.d === todayStr);
-            const cls = `card ${isToday ? 'today' : ''} ${done ? 'done' : ''}`;
+            lock.style.opacity = "0";
+            lock.style.transform = "scale(1.2)";
+            
+            setTimeout(() => {
+                lock.remove(); // Clean exit
+                document.getElementById("mainAppShell").style.display = "block";
+                document.getElementById("hudMetric").innerHTML = `DATA_STREAM: <b>SYNCHRONIZED</b>`;
+                initOS();
+            }, 600);
+        } else {
+            logBox.innerHTML += "<br>HANDSHAKE: FAILURE... UNAUTHORIZED";
+            if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+            
+            const dots = document.querySelectorAll(".dot-node");
+            dots.forEach(d => d.classList.add("breach"));
+            lock.style.animation = "jitter-denial 0.4s ease";
+            
+            setTimeout(() => {
+                pinBuffer = "";
+                updateMatrix();
+                dots.forEach(d => d.classList.remove("breach"));
+                lock.style.animation = "";
+            }, 500);
+        }
+    }
 
-            let rows = d.s.map(r => `
-                <div class="row">
-                    <div class="badge ${r.c}">${r.t}</div>
-                    <div style="flex:1">
-                        <div style="font-weight:700; font-size:14px">${r.n}</div>
-                        <div style="font-size:11px; color:#888">${r.d}</div>
-                    </div>
-                </div>
-            `).join("");
+    /**
+     * MAIN APPLICATION LOGIC
+     */
+    function initOS() {
+        const target = document.getElementById("protocolFeed");
+        const todayInt = new Date().getDate(); // 11
+        let completedUnits = 0;
+        let finalFeedHTML = "";
 
-            let gym = "";
-            if(d.g.on) {
-                let exs = d.g.x.map(x => `<div style="padding:5px 0; color:#ddd; font-size:12px">▪ ${x}</div>`).join("");
-                gym = `
-                    <div class="gym-area">
-                        <div style="color:var(--primary); font-weight:800; font-size:12px; margin-bottom:5px;">${d.g.t} PROTOCOL</div>
-                        ${exs}
-                        <button class="gym-btn" onclick="window.open('${WIKI}', '_blank')">ACCESS MUSCLEWIKI DB</button>
-                    </div>
-                `;
-            }
+        DATA_SET.forEach((protocol, index) => {
+            const dayDigit = parseInt(protocol.d);
+            const storageId = `bisha_v16_data_${dayDigit}`;
+            const stateDone = localStorage.getItem(storageId) === "1";
+            const isFuture = dayDigit > todayInt;
+            const isNow = dayDigit === todayInt;
 
-            h += `
-                <div class="${cls}" id="card-${i}">
-                    <div class="c-header">
+            if (stateDone) completedUnits++;
+
+            const classString = `data-card 
+                ${isNow ? 'active-today' : ''} 
+                ${stateDone ? 'done-state' : ''}`;
+
+            finalFeedHTML += `
+                <div class="${classString}" id="card-node-${index}" style="animation-delay: ${index * 0.05}s">
+                    <div class="card-head">
                         <div>
-                            <div class="date">${d.d}</div>
-                            <div class="day">${d.w}</div>
+                            <div class="card-title">${protocol.d}</div>
+                            <div class="card-subtitle">${protocol.w}</div>
                         </div>
-                        <div class="check ${done?'active':''}" onclick="toggle(${i})"><i>✓</i></div>
+                        <div class="node-switch ${stateDone ? 'active' : ''}" 
+                             onclick="handleToggle(${dayDigit}, ${isFuture}, ${index})">
+                            <i>✓</i>
+                        </div>
                     </div>
-                    <div>${rows}</div>
-                    ${gym}
+                    <div class="card-rows">
+                        ${protocol.s.map(row => `
+                            <div class="row-item">
+                                <div class="badge-tag" style="background:${getBadgeStyle(row.c)}">${row.t}</div>
+                                <div class="row-data">
+                                    <h4 class="row-name">${row.n}</h4>
+                                    <p>${row.d}</p>
+                                </div>
+                            </div>
+                        `).join("")}
+                    </div>
+                    ${buildGymInterface(protocol)}
                 </div>
             `;
         });
 
-        feed.innerHTML = h;
-        updateBar(c);
+        target.innerHTML = finalFeedHTML;
+        refreshDockHUD(completedUnits);
+
+        // Auto-Scroll to active date
         setTimeout(() => {
-            let t = document.querySelector(".today");
-            if(t) t.scrollIntoView({behavior:"smooth", block:"center"});
-        }, 500);
-    }
-
-    function toggle(i) {
-        const id = "v19_" + i;
-        if(localStorage.getItem(id)) localStorage.removeItem(id);
-        else {
-            localStorage.setItem(id, "1");
-            if(navigator.vibrate) navigator.vibrate(50);
-        }
-        render();
-    }
-
-    function updateBar(c) {
-        let p = Math.round((c / DATA.length) * 100);
-        document.getElementById("pct").innerText = p + "% COMPLETED";
-    }
-
-    function startClock() {
-        setInterval(() => {
-            const h = new Date().getHours();
-            if(h >= 12 && h < 20) {
-                document.getElementById("fast-timer").innerText = "EATING WINDOW";
-                document.getElementById("fast-timer").style.color = "#00ff9d";
-            } else {
-                document.getElementById("fast-timer").innerText = "FASTING ACTIVE";
-                document.getElementById("fast-timer").style.color = "#ff375f";
+            const activeNode = document.querySelector(".active-today");
+            if (activeNode) {
+                activeNode.scrollIntoView({ behavior: "smooth", block: "center" });
             }
-        }, 1000);
+        }, 400);
     }
 
-    function loot() {
-        const tasks = ["20 Pushups", "1 Min Plank", "Drink 500ml Water", "50 Jumping Jacks", "Walk 10 Mins"];
-        alert("LOOT BOX OPENED: " + tasks[Math.floor(Math.random()*tasks.length)]);
+    function buildGymInterface(dayObj) {
+        if (!dayObj.g.on) {
+            return `<div style="padding:15px; text-align:center; color:#333; font-size:10px; font-family:var(--font-code)">
+                        [ RECOVERY_MODE: ACTIVE ]
+                    </div>`;
+        }
+        
+        const listItems = dayObj.g.x.map(ex => `
+            <div class="ex-line">
+                <span class="row-name">${ex.n}</span>
+                <small>${ex.s}</small>
+            </div>
+        `).join("");
+
+        return `
+            <button class="gym-trigger" 
+                    onclick="let p=this.nextElementSibling; p.style.display=p.style.display==='block'?'none':'block'">
+                <span>💪 PROTOCOL: ${dayObj.g.t}</span>
+                <span>▼</span>
+            </button>
+            <div class="gym-panel">
+                ${listItems}
+                <a href="${dayObj.g.l}" target="_blank" class="wiki-btn">
+                    EXECUTE_TECHNIQUE_DATA.EXE
+                </a>
+            </div>
+        `;
     }
 
-    @keyframes moveLine { 0% { width: 0%; left: 0; } 50% { width: 100%; left: 0; } 100% { width: 0%; left: 100%; } }
+    function getBadgeStyle(tag) {
+        switch(tag) {
+            case 'b-mor': return 'var(--g-sunrise)';
+            case 'b-sch': return 'var(--g-electric)';
+            case 'b-lun': return 'var(--g-lime)';
+            case 'b-gym': return 'var(--g-bisha)';
+            case 'b-stu': return 'var(--g-hyper)';
+            default: return 'var(--g-void)';
+        }
+    }
+
+    function handleToggle(id, locked, index) {
+        if (locked) {
+            const node = document.getElementById(`card-node-${index}`);
+            node.classList.add("denied-pulse");
+            if (navigator.vibrate) navigator.vibrate(200);
+            setTimeout(() => node.classList.remove("denied-pulse"), 450);
+            return;
+        }
+
+        const sid = `bisha_v16_data_${id}`;
+        const val = localStorage.getItem(sid);
+        localStorage.setItem(sid, val === "1" ? "0" : "1");
+        if (navigator.vibrate) navigator.vibrate(20);
+        initOS();
+    }
+
+    function refreshDockHUD(solvedCount) {
+        const perc = Math.round((solvedCount / DATA_SET.length) * 100);
+        document.getElementById("quantumBar").style.width = perc + "%";
+        document.getElementById("hudMetric").innerHTML = `DATA_STREAM: <b>${perc}%_SYNCED</b>`;
+    }
+
+    // CLOCK TICK
+    setInterval(() => {
+        const d = new Date();
+        document.getElementById("clockHud").innerText = d.toTimeString().split(' ')[0];
+    }, 1000);
 
 </script>
 </body>
