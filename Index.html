@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>BISHA PLAN</title>
+<style>
+  :root { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --green: #00ff9d; --dim: #888; }
+  body { background-color: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
+  
+  .header { position: sticky; top: 0; background: rgba(18,18,18,0.95); backdrop-filter: blur(10px); padding: 15px 20px; border-bottom: 1px solid #333; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding-top: env(safe-area-inset-top, 20px); }
+  .logo { color: var(--green); font-weight: 900; font-size: 20px; letter-spacing: -1px; }
+  .pct { font-family: monospace; color: var(--dim); font-size: 14px; }
+  
+  .progress-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 6px; background: #333; z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .progress-fill { height: 100%; background: var(--green); width: 0%; transition: 0.3s; box-shadow: 0 0 15px var(--green); }
+
+  .container { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+  .card { background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid #333; position: relative; transition: 0.2s; }
+  
+  .card.done { border-color: var(--green); background: #16261f; }
+  .card.done .content { opacity: 0.5; }
+  .card.today { border: 1px solid #fff; box-shadow: 0 0 20px rgba(255,255,255,0.05); }
+
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+  .date-group { display: flex; flex-direction: column; }
+  .date { font-weight: 800; font-size: 22px; color: #fff; line-height: 1; }
+  .day { font-size: 13px; color: var(--green); text-transform: uppercase; font-weight: bold; margin-top: 4px; }
+  
+  .check-wrapper { position: relative; width: 36px; height: 36px; }
+  input[type="checkbox"] { appearance: none; width: 100%; height: 100%; border: 2px solid #555; border-radius: 12px; cursor: pointer; transition: 0.2s; background: #252525; }
+  input[type="checkbox"]:checked { background: var(--green); border-color: var(--green); }
+  input[type="checkbox"]:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #000; font-weight: 900; font-size: 20px; }
+
+  .badge { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 8px;}
+  .badge.gym { background: rgba(0, 255, 157, 0.15); color: var(--green); }
+  .badge.rest { background: rgba(255, 157, 0, 0.15); color: #ff9d00; }
+
+  .content { display: grid; grid-template-columns: 1fr; gap: 12px; font-size: 14px; color: #ddd; }
+  .row { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 8px; }
+  .row:last-child { border: none; padding: 0; }
+  .label { font-size: 11px; color: #777; text-transform: uppercase; font-weight: 700; }
+  .val { font-weight: 600; text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">PLAN // BISHA</div>
+  <div class="pct" id="pct">0%</div>
+</div>
+
+<div class="container" id="list"></div>
+
+<div class="progress-container">
+  <div class="progress-fill" id="bar"></div>
+</div>
+
+<script>
+const db = [
+  {d:"12",m:"JAN",w:"Hënë",b:"3 Vezë + Bukë",s:"Banane",g:"PALESTËR",l:"Fasule / Thjerrëza",d:"Kos"},
+  {d:"13",m:"JAN",w:"Martë",b:"Tost",s:"Dhallë",g:"PALESTËR",l:"Gjellë Patate",d:"Çaj"},
+  {d:"14",m:"JAN",w:"Mërkurë",b:"Tërshërë",s:"Kikirikë",g:"PUSHIM",l:"Makarona / Oriz",d:"Frut"},
+  {d:"15",m:"JAN",w:"Enjte",b:"Omëletë",s:"Corny",g:"PALESTËR",l:"Presh",d:"Vezë"},
+  {d:"16",m:"JAN",w:"Premte",b:"Gjizë",s:"Mollë",g:"PALESTËR",l:"Pulë",d:"Kos"},
+  {d:"17",m:"JAN",w:"Shtunë",b:"Vezë sy",s:"-",g:"AKTIV",l:"Shtëpie",d:"Tost"},
+  {d:"18",m:"JAN",w:"Diel",b:"Krepa",s:"-",g:"PUSHIM",l:"Supë",d:"Kos"},
+  {d:"19",m:"JAN",w:"Hënë",b:"Scrambled",s:"Biskota",g:"PALESTËR",l:"Fasule / Qiqra",d:"Çaj"},
+  {d:"20",m:"JAN",w:"Martë",b:"Tërshërë",s:"Dhallë",g:"PALESTËR",l:"Musaka",d:"Kos"},
+  {d:"21",m:"JAN",w:"Mërkurë",b:"Tost",s:"Mandarina",g:"PUSHIM",l:"Burani",d:"Qumësht"},
+  {d:"22",m:"JAN",w:"Enjte",b:"2 Vezë",s:"Simite",g:"PALESTËR",l:"Presh",d:"Frut"},
+  {d:"23",m:"JAN",w:"Premte",b:"Gjizë",s:"Galleta",g:"PALESTËR",l:"Peshk",d:"Kos"},
+  {d:"24",m:"JAN",w:"Shtunë",b:"Omëletë",s:"-",g:"PUSHIM",l:"Shtëpie",d:"Fruta"},
+  {d:"25",m:"JAN",w:"Diel",b:"Makarona",s:"-",g:"PUSHIM",l:"Supë",d:"Çaj"},
+  {d:"26",m:"JAN",w:"Hënë",b:"Omëletë",s:"Banane",g:"PALESTËR",l:"Fasule",d:"Çaj"},
+  {d:"27",m:"JAN",w:"Martë",b:"Tost",s:"Çoko",g:"PALESTËR",l:"Speca",d:"Kos"},
+  {d:"28",m:"JAN",w:"Mërkurë",b:"Tërshërë",s:"Arra",g:"PUSHIM",l:"Bamje",d:"Qumësht"},
+  {d:"29",m:"JAN",w:"Enjte",b:"2 Vezë",s:"Dhallë",g:"PALESTËR",l:"Qofte",d:"Vezë"},
+  {d:"30",m:"JAN",w:"Premte",b:"Sanduiç",s:"Mollë",g:"PALESTËR",l:"Pulë",d:"Kos"},
+  {d:"31",m:"JAN",w:"Shtunë",b:"Lirë",s:"-",g:"PESHIMI",l:"FESTO",d:"Detoks"}
+];
+
+const list = document.getElementById("list");
+const today = new Date().getDate().toString();
+
+function render() {
+  list.innerHTML = "";
+  let count = 0;
+  
+  db.forEach((item, i) => {
+    const id = "day" + i;
+    const isDone = localStorage.getItem(id) === "1";
+    if(isDone) count++;
+    
+    const isGym = item.g.includes("PAL") || item.g.includes("PES");
+    const badgeType = isGym ? "gym" : "rest";
+    const todayClass = (item.d === today) ? "today" : "";
+    const doneClass = isDone ? "done" : "";
+
+    const html = `
+    <div class="card ${todayClass} ${doneClass}" id="card-${i}">
+      <div class="card-header">
+        <div class="date-group">
+          <div class="date">${item.d} <span style="font-size:12px; color:#666">${item.m}</span></div>
+          <div class="day">${item.w}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="badge ${badgeType}">${item.g}</div>
+          <div style="display:flex; justify-content:flex-end; margin-top:5px;">
+             <div class="check-wrapper">
+               <input type="checkbox" onchange="toggle(${i})" ${isDone ? "checked" : ""}>
+             </div>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="row"><span class="label">Mëngjes</span><span class="val">${item.b}</span></div>
+        <div class="row"><span class="label">Snack</span><span class="val">${item.s}</span></div>
+        <div class="row"><span class="label">Gjella</span><span class="val" style="color:var(--green)">${item.l}</span></div>
+        <div class="row"><span class="label">Darka</span><span class="val">${item.d}</span></div>
+      </div>
+    </div>`;
+    list.insertAdjacentHTML('beforeend', html);
+  });
+  
+  const pct = Math.round((count / db.length) * 100);
+  document.getElementById("bar").style.width = pct + "%";
+  document.getElementById("pct").innerText = pct + "%";
+}
+
+function toggle(i) {
+  const id = "day" + i;
+  const checkbox = document.querySelectorAll('input[type="checkbox"]')[i];
+  const card = document.getElementById("card-" + i);
+  if(checkbox.checked) {
+    localStorage.setItem(id, "1");
+    card.classList.add("done");
+  } else {
+    localStorage.removeItem(id);
+    card.classList.remove("done");
+  }
+  const total = document.querySelectorAll('input:checked').length;
+  const pct = Math.round((total / db.length) * 100);
+  document.getElementById("bar").style.width = pct + "%";
+  document.getElementById("pct").innerText = pct + "%";
+}
+render();
+</script>
+</body>
+</html>
